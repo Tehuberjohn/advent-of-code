@@ -15,15 +15,13 @@ function dutyCheck(arr) {
   let anyOverlap = 0;
   for (let i = 0; i < arr.length; i++) {
     const [a, b] = arr[i].split(",");
-    const [aMin, aMax] = a.split("-");
-    const [bMin, bMax] = b.split("-");
+    const [aMin, aMax] = a.split("-").map((n) => +n);
+    const [bMin, bMax] = b.split("-").map((n) => +n);
     let arrA = createArr(aMin, aMax);
     let arrB = createArr(bMin, bMax);
-    if (arrA.slice(0).filter((floor) => !arrB.includes(floor)).length === 0) {
+    if (aMin <= bMin && aMax >= bMax) {
       fullOverlap++;
-    } else if (
-      arrB.slice(0).filter((floor) => !arrA.includes(floor)).length === 0
-    ) {
+    } else if (bMin <= aMin && bMax >= aMax) {
       fullOverlap++;
     }
     const length = arrA.length + arrB.length;
