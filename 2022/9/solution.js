@@ -14,9 +14,9 @@ function moveRope(arr, num) {
 
   const moveHead = {
     R: () => rope[0][1]++,
+    D: () => rope[0][0]++,
     L: () => rope[0][1]--,
     U: () => rope[0][0]--,
-    D: () => rope[0][0]++,
   };
 
   const moveNodes = () => {
@@ -45,13 +45,14 @@ function moveRope(arr, num) {
   for (let i = 0; i < arr.length; i++) {
     const [dir, count] = arr[i].split(" ").map((ele) => +ele || ele);
     for (let j = 0; j < count; j++) {
+      const tail = rope.length - 1;
       moveHead[dir]();
-      moveNodes(dir);
-      if (!map[rope[rope.length - 1]]) map[rope[rope.length - 1]] = true;
+      moveNodes();
+      if (!map[rope[tail]]) map[rope[tail]] = true;
     }
   }
   return Object.keys(map).length;
 }
 
-console.log(moveRope(data, 2));
-console.log(moveRope(data, 10));
+console.log(`Part One: ${moveRope(data, 2)}`);
+console.log(`Part Two: ${moveRope(data, 10)}`);
