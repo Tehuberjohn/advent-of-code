@@ -20,7 +20,7 @@ function CRTmonitor(input) {
   let signal = 0;
 
   const drawSprite = (idx) => {
-    let blank = "........................................".split("");
+    let blank = " ".repeat(40).split("");
     blank.splice(Math.max(idx, 0), 3, "#", "#", "#"); //pixels 202 and 203 arent rendering correctly, will refactor later
     sprite = blank.join("");
   };
@@ -39,6 +39,9 @@ function CRTmonitor(input) {
     for (let i = 0; i < process[cmd]; i++) {
       count++;
       renderPixel();
+      //pixels take the correct sprite so maybe it is intentional?
+      if (count === 202) console.log([screenPos, registerX, sprite]);
+      if (count === 203) console.log([screenPos, registerX, sprite]);
       screenPos[1]++;
       if (count % 40 === 20) {
         signal += count * registerX;
