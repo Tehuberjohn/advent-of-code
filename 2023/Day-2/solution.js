@@ -48,7 +48,6 @@ const parseGameData = (str) => {
   rounds = cleanRoundData(rounds);
   const [lowRed, lowGreen, lowBlue] = findLowest(rounds);
   const cubedSum = lowRed * lowGreen * lowBlue;
-  console.log(cubedSum);
   let isPossible = true;
   for (const round of rounds) {
     const [number, colour] = round.split(" ");
