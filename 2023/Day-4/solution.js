@@ -8,23 +8,6 @@ const formatNums = (str) => {
   return nums.map((num) => +num).sort();
 };
 
-const buildCards = (input) => {
-  const cards = [];
-  for (const line of input) {
-    const [card, numbers] = line.split(":");
-    const cardNum = card.split(" ")[1];
-    const [winner, player] = numbers.split("|");
-    cards.push({
-      number: +cardNum,
-      numOfCards: 1,
-      playerNums: formatNums(player),
-      winningNums: formatNums(winner),
-    });
-  }
-  return cards;
-};
-const deck = buildCards(data);
-
 const mapArr = (arr) => {
   const map = {};
   for (const num of arr) {
@@ -33,7 +16,26 @@ const mapArr = (arr) => {
   return map;
 };
 
-const findCardWorth = (num) => {
+const buildCards = (input) => {
+  const cards = [];
+  for (const line of input) {
+    const [card, numbers] = line.split(":");
+    const cardNum = card.slice(5).trim();
+    const [winner, player] = numbers.split("|");
+    cards.push({
+      number: +cardNum,
+      numOfCards: 1,
+      wins: 0,
+      score: 0,
+      playerNums: formatNums(player),
+      winningNums: mapArr(formatNums(winner)),
+    });
+  }
+  return cards;
+};
+const deck = buildCards(data);
+
+const findCardScore = (num) => {
   let score = 0;
   while (num) {
     score === 0 ? (score = 1) : (score = score + score);
@@ -42,33 +44,30 @@ const findCardWorth = (num) => {
   return score;
 };
 
-const addBonusCards = (cardNum, number, copies) => {
-  for (let i = 0; i < number; i++) {
-    deck[cardNum + i].numOfCards += copies;
+const addBonusCards = (card) => {
+  for (let i = 0; i < card.wins; i++) {
+    deck[card.number + i].numOfCards += card.numOfCards;
   }
 };
 
-const scoreCard = (card) => {
-  const winners = mapArr(card.winningNums);
-  let matches = 0;
+const readCard = (card) => {
   for (const num of card.playerNums) {
-    if (num in winners) {
-      matches++;
+    if (num in card.winningNums) {
+      card.wins++;
     }
   }
-  addBonusCards(card.number, matches, card.numOfCards);
-  return findCardWorth(matches);
+  card.score = findCardScore(card.wins);
+  addBonusCards(card);
 };
 
 const solve = (arr) => {
   let scoreTotal = 0;
   let cardTotal = 0;
   for (const card of arr) {
-    let score = scoreCard(card);
-    scoreTotal += score;
+    readCard(card);
+    scoreTotal += card.score;
     cardTotal += card.numOfCards;
-    console.log(card.numOfCards);
   }
-  console.log([scoreTotal, cardTotal]);
+  console.log(`Part One: ${scoreTotal} Part Two: ${cardTotal}`);
 };
 solve(deck);
