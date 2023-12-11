@@ -61,11 +61,18 @@ const lookupSeedLocation = (num, values) => {
   return num;
 };
 
-const getSeeds = (arr) => {};
+const getSeedRanges = (arr) => {
+  const pairs = [];
+  for (let i = 0; i < arr.length; i += 2) {
+    const start = arr[i];
+    const range = arr[i + 1];
+    pairs.push([start, range]);
+  }
+  return pairs;
+};
 
-const almanac = new Almanac(data);
-const solve = (book, part) => {
-  const seeds = part === "one" ? book.seeds : getSeeds(book.seeds);
+const solveOne = (book) => {
+  const seeds = book.seeds;
   const locations = [];
   for (const seed of seeds) {
     let location = seed;
@@ -74,6 +81,29 @@ const solve = (book, part) => {
     }
     locations.push(location);
   }
-  console.log(`Part ${part}: ${Math.min(...locations)}`);
+  console.log(`Part One: ${Math.min(...locations)}`);
 };
-solve(almanac, "one");
+
+const solveTwo = (book) => {
+  const seeds = getSeedRanges(book.seeds);
+  const locations = [];
+  for (const seed of seeds) {
+    let smallest = Number.MAX_SAFE_INTEGER;
+    while (seed[1]) {
+      let location = seed[0];
+      for (const page of book.pages) {
+        location = lookupSeedLocation(location, page.values);
+      }
+      if (location < smallest) {
+        smallest = location;
+      }
+      seed[0]++;
+      seed[1]--;
+    }
+    locations.push(smallest);
+  }
+  console.log(`Part Two: ${Math.min(...locations) - 1}`);
+};
+const almanac = new Almanac(data);
+solveOne(almanac);
+solveTwo(almanac);
