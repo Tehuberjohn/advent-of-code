@@ -34,52 +34,45 @@ class Poker {
   parseData = (arr) => {
     const cards = [];
     for (const line of arr) {
-      cards.push(this.buildCard(line));
+      cards.push(this.buildCard(line.trim()));
     }
     return cards;
   };
   buildCard = (str) => {
     const [hand, wager] = str.split(" ");
-    const sorted = hand.split("");
-    const [handType, kickers, pairs] = this.evalHand(sorted);
+    const cardArr = hand.split("");
+    const [handType, cards] = this.evalHand(cardArr);
     const card = {
-      hand: sorted,
+      hand: cardArr,
       handType,
-      pairs,
-      kickers,
-      wager: +wager,
+      cards,
+      wager: Number(wager),
     };
     return card;
   };
   evalHand = (arr) => {
     const map = this.mapCards(arr);
     const unique = [...new Set(arr)];
-    const pairs = [];
-    const kickers = [];
+    let pairs = 0;
     let highest = 0;
     for (const card of unique) {
       if (map[card] > 1) {
-        pairs.push([card, map[card]]);
-      } else {
-        kickers.push(card);
+        pairs++;
       }
       if (map[card] > highest) {
         highest = map[card];
       }
     }
-    const handType = this.getHandType(highest, pairs.length > 1);
+    const handType = this.getHandType(highest, pairs > 1);
     return [
       handType,
-      kickers.sort((a, b) => this.cardValues[b] - this.cardValues[a]),
-      pairs
-        .sort((a, b) => {
-          if (map[a[0]] === map[b[0]]) {
-            return this.cardValues[b[0]] - this.cardValues[a[0]];
-          } else {
-            return map[b[1]] - map[a[1]];
-          }
-        })
-        .map((pair) => pair[0]),
+      unique.sort((a, b) => {
+        if (map[a] === map[b]) {
+          return this.cardValues[b] - this.cardValues[a];
+        } else {
+          return map[b] - map[a];
+        }
+      }),
     ];
   };
   mapCards = (arr) => {
@@ -110,29 +103,22 @@ class Poker {
   }
   sortHands() {
     const sortAlgo = (a, b) => {
-      if (a.handType < b.handType) {
-        return this.handValues[a.handType] - this.handValues[b.handType];
-      }
-      if (a.pairs[0] !== b.pairs[0]) {
-        return this.cardValues[a.pairs[0]] - this.cardValues[b.pairs[0]];
-      }
-      if (a.pairs[1] !== b.pairs[1]) {
-        return this.cardValues[a.pairs[0]] - this.cardValues[b.pairs[0]];
-      } else {
-        for (let i = 0; i < Math.max(a.kickers.length, b.kickers.length); i++) {
-          if (a.kickers[i] !== b.kickers[i]) {
-            return (
-              this.cardValues[a.kickers[i]] - this.cardValues[b.kickers[i]]
-            );
+      if (a.handType === b.handType) {
+        for (let i = 0; i < 5; i++) {
+          if (a.hand[i] !== b.hand[i]) {
+            return this.cardValues[a.hand[i]] - this.cardValues[b.hand[i]];
           }
         }
+        console.log(["missed", a.hand, b.hand]); //catch dupe hands
       }
+      return this.handValues[a.handType] - this.handValues[b.handType];
     };
     this.hands.sort(sortAlgo);
   }
 }
 
 const game = new Poker(data);
+
 const solve = () => {
   game.sortHands();
   let rank = 1;
@@ -141,6 +127,6 @@ const solve = () => {
     score += hand.wager * rank;
     rank++;
   }
-  console.log(score);
+  console.log(`Part One:${score}`);
 };
 solve();
