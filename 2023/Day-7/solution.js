@@ -6,19 +6,19 @@ const data = fs.readFileSync("input.txt").toString().split("\r\n");
 class Poker {
   constructor(arr) {
     this.cardValues = {
-      2: 1,
-      3: 2,
-      4: 3,
-      5: 4,
-      6: 5,
-      7: 6,
-      8: 7,
-      9: 8,
-      T: 9,
-      J: 10,
-      Q: 11,
-      K: 12,
-      A: 13,
+      2: 2,
+      3: 3,
+      4: 4,
+      5: 5,
+      6: 6,
+      7: 7,
+      8: 8,
+      9: 9,
+      T: 10,
+      J: 12,
+      Q: 13,
+      K: 14,
+      A: 15,
     };
     this.handValues = {
       "High card": 1,
@@ -29,16 +29,17 @@ class Poker {
       "Four of a kind": 6,
       "Five of a kind": 7,
     };
+    this.isJokerDeck = false;
     this.hands = this.parseData(arr);
   }
-  parseData = (arr) => {
+  parseData(arr) {
     const cards = [];
     for (const line of arr) {
       cards.push(this.buildCard(line.trim()));
     }
     return cards;
-  };
-  buildCard = (str) => {
+  }
+  buildCard(str) {
     const [hand, wager] = str.split(" ");
     const cardArr = hand.split("");
     const [handType, cards] = this.evalHand(cardArr);
@@ -49,21 +50,27 @@ class Poker {
       wager: Number(wager),
     };
     return card;
-  };
-  evalHand = (arr) => {
+  }
+  evalHand(arr) {
     const map = this.mapCards(arr);
     const unique = [...new Set(arr)];
-    let pairs = 0;
+    let pairs = [];
     let highest = 0;
+    let jokers = 0;
     for (const card of unique) {
+      const isJoker = this.isJokerDeck && card === "J";
       if (map[card] > 1) {
-        pairs++;
+        isJoker ? (jokers += map[card]) : pairs.push(card);
       }
-      if (map[card] > highest) {
+      if (map[card] > highest && !isJoker) {
         highest = map[card];
       }
     }
-    const handType = this.getHandType(highest, pairs > 1);
+    if (this.isJokerDeck && jokers.length) {
+      pairs.sort((a, b) => map[a] - map[b]);
+      highest += jokers;
+    }
+    const handType = this.getHandType(highest, pairs.length > 1);
     return [
       handType,
       unique.sort((a, b) => {
@@ -74,14 +81,14 @@ class Poker {
         }
       }),
     ];
-  };
-  mapCards = (arr) => {
+  }
+  mapCards(arr) {
     const map = {};
     for (const card of arr) {
       card in map ? map[card]++ : (map[card] = 1);
     }
     return map;
-  };
+  }
   getHandType(highest, multiplePairs) {
     switch (highest) {
       case 5:
@@ -123,6 +130,16 @@ const solve = () => {
   game.sortHands();
   let rank = 1;
   let score = 0;
+  for (const hand of game.hands) {
+    score += hand.wager * rank;
+    rank++;
+  }
+  console.log(`Part One:${score}`);
+  game.isJokerDeck = true;
+  game.hands = game.parseData(data);
+  game.sortHands();
+  rank = 1;
+  score = 0;
   for (const hand of game.hands) {
     score += hand.wager * rank;
     rank++;
