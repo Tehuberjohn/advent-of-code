@@ -108,20 +108,48 @@ const exploreBoard = (row, col) => {
   return matches;
 };
 
+const isXedMas = (row, col) => {
+  const topL = data[row - 1][col - 1];
+  const topR = data[row - 1][col + 1];
+  const bottomL = data[row + 1][col - 1];
+  const bottomR = data[row + 1][col + 1];
+  const diagDown = [topL, "A", bottomR].sort().join("");
+  const diagUp = [bottomL, "A", topR].sort().join("");
+  return diagDown === "AMS" && diagUp === "AMS";
+};
+
+const isInBounds = (row, col) => {
+  if (row < 1 || col < 1) {
+    return false;
+  }
+  if (row > data.length - 2 || col > data[0].length - 2) {
+    return false;
+  }
+  return true;
+};
+
 const checkForWord = (row, col) => {
   return exploreBoard(row, col);
 };
 
 const solve = (arr) => {
   let matches = 0;
+  let matchedX = 0;
   for (let row = 0; row < arr.length; row++) {
     for (let col = 0; col < arr[0].length; col++) {
-      if (arr[row][col] === "X") {
+      const char = arr[row][col];
+      if (char === "X") {
         matches += checkForWord(row, col);
+      } else if (char === "A") {
+        if (isInBounds(row, col)) {
+          if (isXedMas(row, col)) {
+            matchedX++;
+          }
+        }
       }
     }
   }
-  console.log(matches);
+  console.log(`Part One:${matches} Part Two:${matchedX}`);
 };
 
 solve(data);
