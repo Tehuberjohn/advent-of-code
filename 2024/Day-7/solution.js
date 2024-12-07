@@ -35,32 +35,17 @@ const calculate = (nums, operators) => {
   return total;
 };
 
-const hasValidSolution1 = (sum, numArr) => {
-  const operators = {
-    0: "+",
-    1: "*",
-  };
-  //find all different possible states
-  for (let i = 0; i < 2 ** (numArr.length - 1); i++) {
-    const binary = i.toString(2).padStart(numArr.length - 1, "0");
-    const operations = binary.split("").map((num) => operators[num]);
-    const total = calculate(numArr.slice(0), operations);
-    if (total === sum) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const hasValidSolution2 = (sum, numArr) => {
+const hasValidSolution = (sum, numArr, part) => {
   const operators = {
     0: "+",
     1: "*",
     2: "|",
   };
   //find all different possible states
-  for (let i = 0; i < 3 ** (numArr.length - 1); i++) {
-    const binary = i.toString(3).padStart(numArr.length - 1, "0");
+  for (let i = 0; i < (part === "one" ? 2 : 3) ** (numArr.length - 1); i++) {
+    const binary = i
+      .toString(part === "one" ? 2 : 3)
+      .padStart(numArr.length - 1, "0");
     const operations = binary.split("").map((num) => operators[num]);
     const total = calculate(numArr.slice(0), operations);
     if (total === sum) {
@@ -74,14 +59,8 @@ const solve = (arr, part) => {
   const [sums, nums] = parseData(arr);
   let total = 0;
   for (let i = 0; i < sums.length; i++) {
-    if (part === "one") {
-      if (hasValidSolution1(sums[i], nums[i])) {
-        total += sums[i];
-      }
-    } else {
-      if (hasValidSolution2(sums[i], nums[i])) {
-        total += sums[i];
-      }
+    if (hasValidSolution(sums[i], nums[i], part)) {
+      total += sums[i];
     }
   }
   console.log(`Part ${part}: ${total}`);
