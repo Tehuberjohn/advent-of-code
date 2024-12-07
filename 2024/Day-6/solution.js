@@ -1,8 +1,16 @@
 const fs = require("fs");
 
-const data = fs.readFileSync("input.txt").toString().split("\r\n");
+const data = fs.readFileSync("test.txt").toString().split("\r\n");
 // console.log(data);
 
+const seen = {};
+
+const moves = [
+  [-1, 0],
+  [0, 1],
+  [1, 0],
+  [0, -1],
+];
 const findStartingPos = (arr) => {
   for (let i = 0; i < arr.length; i++) {
     const line = arr[i];
@@ -22,20 +30,26 @@ const isInBounds = (row, col) => {
 };
 
 const walkGaurd = (row, col, num, map) => {
-  const moves = [
-    [-1, 0],
-    [0, 1],
-    [1, 0],
-    [0, -1],
-  ];
   const move = moves[num % 4];
   let next = map[row][col];
+  let loops = 0;
+  let unique = 0;
   while (true) {
-    map[row][col] = "X";
+    map[row][col] = map[row][col] === "2" ? "2" : "X";
+    const pos = `${row}|${col}`;
+    if (!seen[pos]) {
+      unique++;
+    }
+    seen[pos] ? seen[pos].push(num % 4) : (seen[pos] = [num % 4]);
     if (isInBounds(row + move[0], col + move[1])) {
       const isObstacleNext = map[row + move[0]][col + move[1]] === "#";
       if (isObstacleNext) {
         break;
+      }
+
+      if (checkForLoop(row, col, num + 1)) {
+        map[row + move[0]][col + move[1]] = "2";
+        loops++;
       }
       row += move[0];
       col += move[1];
@@ -46,32 +60,45 @@ const walkGaurd = (row, col, num, map) => {
       break;
     }
   }
-  return [row, col];
+  return [row, col, unique, loops];
 };
 
-const countSteps = (arr) => {
-  let steps = 0;
-  for (const line of arr) {
-    for (const tile of line) {
-      if (tile === "X") {
-        steps++;
+const checkForLoop = (x, y, num) => {
+  const move = moves[num % 4];
+  let [row, col] = [x, y].slice(0);
+  while (true) {
+    const tileData = seen[`${row}|${col}`] || [];
+    if (isInBounds(row + move[0], col + move[1])) {
+      if (tileData.includes((num % 4) % 4)) {
+        return true;
       }
+      row += move[0];
+      col += move[1];
+      current = data[row][col];
+    } else {
+      return false;
     }
   }
-  return steps;
 };
 
 const solve = (arr) => {
   const map = arr.map((line) => line.split(""));
   let [row, col] = findStartingPos(map);
+  const start = [row, col].slice(0);
   let lines = 0;
+  let uniqueLocs = 0;
+  let possibleLoops = 0;
   while (isInBounds(row, col)) {
-    [row, col] = walkGaurd(row, col, lines, map);
+    [row, col, unique, loops] = walkGaurd(row, col, lines, map);
+    uniqueLocs += unique;
+    possibleLoops += loops;
     lines++;
   }
-  const steps = countSteps(map);
-  console.log(map.map((line) => line.join("")).join("\n"));
-  console.log(steps);
+  console.log(map.map((line) => line.join(" ")).join("\n"));
+  console.log("         ");
+  console.log(`Part One: ${uniqueLocs} Part 2: ${possibleLoops}`);
 };
+
+//works on sample for part 2, Needs more time in the over to figure out where my logic is flawed, maybe mapping the board first then evaluating the path after would be more successful?
 
 solve(data);
