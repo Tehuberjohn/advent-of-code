@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const data = fs.readFileSync("test.txt").toString().split("\r\n");
+const data = fs.readFileSync("input.txt");
 // console.log(data);
 
 const seen = {};
@@ -31,29 +31,26 @@ const isInBounds = (row, col) => {
 
 const walkGaurd = (row, col, num, map) => {
   const move = moves[num % 4];
-  let next = map[row][col];
   let loops = 0;
   let unique = 0;
   while (true) {
-    map[row][col] = map[row][col] === "2" ? "2" : "X";
-    const pos = `${row}|${col}`;
-    if (!seen[pos]) {
-      unique++;
-    }
-    seen[pos] ? seen[pos].push(num % 4) : (seen[pos] = [num % 4]);
     if (isInBounds(row + move[0], col + move[1])) {
       const isObstacleNext = map[row + move[0]][col + move[1]] === "#";
       if (isObstacleNext) {
         break;
       }
-
+      map[row][col] = map[row][col] === "2" ? "2" : "X";
+      const pos = `${row}|${col}`;
+      if (!seen[pos]) {
+        unique++;
+      }
+      seen[pos] ? seen[pos].push(num % 4) : (seen[pos] = [num % 4]);
       if (checkForLoop(row, col, num + 1)) {
         map[row + move[0]][col + move[1]] = "2";
         loops++;
       }
       row += move[0];
       col += move[1];
-      next = data[row][col];
     } else {
       row += move[0];
       col += move[1];
@@ -63,28 +60,37 @@ const walkGaurd = (row, col, num, map) => {
   return [row, col, unique, loops];
 };
 
-const checkForLoop = (x, y, num) => {
-  const move = moves[num % 4];
-  let [row, col] = [x, y].slice(0);
-  while (true) {
-    const tileData = seen[`${row}|${col}`] || [];
+const checkForLoop = (row, col, num) => {
+  let loopMap = {};
+  let move = moves[num % 4];
+  let bounces = 0;
+  while (bounces < 1000) {
     if (isInBounds(row + move[0], col + move[1])) {
-      if (tileData.includes((num % 4) % 4)) {
+      if (data[row + move[0]][col + move[1]] === "#") {
+        num = (num + 1) % 4;
+        move = moves[num % 4];
+        bounces++;
+      }
+      const mapData = seen[`${row}|${col}`] || [];
+      const loopMapData = loopMap[`${row}|${col}`] || [];
+      if (mapData.includes(num % 4) || loopMapData.includes(num % 4)) {
         return true;
       }
+      loopMap[`${row}|${col}`]
+        ? loopMap[`${row}|${col}`].push(num % 4)
+        : (loopMap[`${row}|${col}`] = [num % 4]);
       row += move[0];
       col += move[1];
-      current = data[row][col];
     } else {
       return false;
     }
   }
+  return false;
 };
 
 const solve = (arr) => {
   const map = arr.map((line) => line.split(""));
   let [row, col] = findStartingPos(map);
-  const start = [row, col].slice(0);
   let lines = 0;
   let uniqueLocs = 0;
   let possibleLoops = 0;
@@ -99,6 +105,6 @@ const solve = (arr) => {
   console.log(`Part One: ${uniqueLocs} Part 2: ${possibleLoops}`);
 };
 
-//works on sample for part 2, Needs more time in the over to figure out where my logic is flawed, maybe mapping the board first then evaluating the path after would be more successful?
+//works on sample for part 2, Needs more time in the oven to figure out where my logic is flawed, maybe mapping the board first then evaluating the path after would be more successful?
 
 solve(data);

@@ -51,7 +51,6 @@ const sortPages = (arr, map) => {
   for (let line of arr) {
     line = line.sort((a, b) => {
       const aMap = map[a] || [];
-      const bMap = map[b] || [];
       if (aMap.includes(b)) {
         return -1;
       }
