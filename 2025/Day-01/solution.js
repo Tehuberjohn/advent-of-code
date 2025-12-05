@@ -42,7 +42,7 @@ const solve = (arr) => {
     if (dial === 0) {
       matches++;
     }
-    console.log([dial, `matches: ${matches}`, `clicks: ${clickNumber}`]);
+    // console.log([dial, `matches: ${matches}`, `clicks: ${clickNumber}`]);
   }
   console.log(`Part One: ${matches} part Two: ${clickNumber + matches}`);
 };
