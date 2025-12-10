@@ -30,12 +30,11 @@ const getDistances = (banks) => {
   return distances.sort((a, b) => a[2] - b[2]);
 };
 
-const connectBanks = (banks, start, end, circuits, bankMap) => {
+const connectBanks = (banks, start, end, circuits, bankMap, max) => {
   let connectionsMade = 0;
-  let i = start;
   while (connectionsMade < end) {
-    const [bank1, bank2] = banks[i];
-    i++;
+    const [bank1, bank2, _] = banks[start];
+    start++;
     if (bank1 in bankMap && bank2 in bankMap) {
       if (bankMap[bank1] !== bankMap[bank2]) {
         const circuitIdx = bankMap[bank2];
@@ -67,6 +66,10 @@ const connectBanks = (banks, start, end, circuits, bankMap) => {
       // console.log(circuits[circuits.length - 1]);
       // console.log("-------------");
     }
+    if (circuits[bankMap[bank1]].length === max) {
+      return [bank1, bank2];
+    }
+    connectionsMade++;
   }
   return [circuits, bankMap];
 };
@@ -74,55 +77,29 @@ const connectBanks = (banks, start, end, circuits, bankMap) => {
 const solve = (arr, connections) => {
   const banks = parseData(arr);
   const distances = getDistances(banks);
-  const [circuits, bankMap] = connectBanks(distances, 0, connections, [], {});
-  console.log(circuits);
-  // const circuits = [];
-  // const used = {};
-  // let connectionsMade = 0;
-  // let i = 0;
-  // while (connectionsMade < connections) {
-  //   const [bank1, bank2] = distances[i];
-  //   i++;
-  //   if (bank1 in used && bank2 in used) {
-  //     if (used[bank1] !== used[bank2]) {
-  //       const circuitIdx = used[bank2];
-  //       const bank1Circuit = circuits[used[bank1]];
-  //       // console.log(bank1Circuit);
-  //       // console.log(circuits[circuitIdx])
-  //       circuits[circuitIdx] = circuits[circuitIdx].concat(bank1Circuit);
-  //       circuits[used[bank1]] = [];
-  //       bank1Circuit.forEach((bank) => {
-  //         used[bank] = circuitIdx;
-  //       });
-  //       // console.log(["seen both", bank1, bank2]);
-  //       // console.log(circuits[circuitIdx]);
-  //       // console.log("----------");
-  //     }
-  //   } else if (bank1 in used || bank2 in used) {
-  //     const isBank1 = bank1 in used;
-  //     const circuitIdx = isBank1 ? used[bank1] : used[bank2];
-  //     circuits[circuitIdx].push(isBank1 ? bank2 : bank1);
-  //     used[isBank1 ? bank2 : bank1] = circuitIdx;
-  //     // console.log([`added to circuit ${circuitIdx}`, isBank1 ? bank2 : bank1]);
-  //     // console.log(circuits[circuitIdx]);
-  //     // console.log("-------------");
-  //   } else {
-  //     circuits.push([bank1, bank2]);
-  //     used[bank1] = circuits.length - 1;
-  //     used[bank2] = circuits.length - 1;
-  //     // console.log(["new circuit", bank1, bank2]);
-  //     // console.log(circuits[circuits.length - 1]);
-  //     // console.log("-------------");
-  //   }
-  //   connectionsMade++;
-  // }
-  circuits.sort((a, b) => b.length - a.length);
-  const circuitSum = circuits
+  const [circuits, bankMap] = connectBanks(
+    distances,
+    0,
+    connections,
+    [],
+    {},
+    banks.length
+  );
+  const partOne = circuits.slice(0).sort((a, b) => b.length - a.length);
+  const [bank1, bank2] = connectBanks(
+    distances,
+    connections,
+    distances.length,
+    circuits,
+    bankMap,
+    banks.length
+  );
+  const circuitSum = partOne
     .slice(0, 3)
     .map((arr) => arr.length)
     .reduce((a, b) => a * b, 1);
-  // console.log(distances);
-  console.log(`Part One: ${circuitSum} Part Two: TBD`);
+  const finalX = bank1.split("-")[0] * bank2.split("-")[0];
+  console.log(`Part One: ${circuitSum} Part Two: ${finalX}`);
 };
 
 solve(testData, 10);
